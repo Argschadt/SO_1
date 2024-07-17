@@ -359,19 +359,34 @@ int main(int argc, char **argv) {
             if (current_process->remaining_time == 1) {
                 current_process->state = 3; // Set process to Swapped Out state
             } else {
-                // Check if the current process requests I/O
-                int io_request = 0;
-                if (current_process->remaining_time > 1) {
-                    io_request = IOReq();
-                }
+            // Check if the current process requests I/O
+            int io_request = 0;
+            if (current_process->remaining_time > 1) {
+                io_request = IOReq();
+            }
 
-                if (io_request) {
-                    current_process->state = 3; // Set process to Swapped Out state
-                } else {
-                    current_process->state = 0; // Set process to Ready state
-                }
+            if (io_request) {
+                current_process->state = 3; // Set process to Swapped Out state
+            } else {
+                current_process->state = 0; // Set process to Ready state
+            }
 
-                current_process->remaining_time--;
+            current_process->remaining_time--;
+            }
+
+            // Update process priority and queue
+            if (current_process->state != 3) {
+            int current_priority = current_process->priority;
+            int quantum = 1 << current_priority;
+
+            if (quantum <= 1) {
+                current_process->priority = 0; // Set priority to 0 if quantum is 1
+            } else {
+                current_process->priority++;
+            }
+
+            // Move process to the end of the queue of its new priority
+            enqueue(queues[current_process->priority], dequeue(queues[current_priority]));
             }
         }
 
